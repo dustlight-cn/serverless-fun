@@ -22,12 +22,16 @@ This way only one plugin needs to be added to the service in order to get access
 whole provider implementation.
 */
 
+const dotenv = require("dotenv")
+dotenv.config()
+
 const KubelessProvider = require('./provider/kubelessProvider');
 const KubelessDeploy = require('./deploy/kubelessDeploy');
 const KubelessRemove = require('./remove/kubelessRemove');
 const KubelessInvoke = require('./invoke/kubelessInvoke');
 const KubelessInfo = require('./info/kubelessInfo');
 const KubelessLogs = require('./logs/kubelessLogs');
+
 
 class KubelessIndex {
   constructor(serverless, options) {
