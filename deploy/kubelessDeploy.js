@@ -18,24 +18,23 @@
 
 const _ = require('lodash');
 const BbPromise = require('bluebird');
-const Config = require('../lib/config');
-const deploy = require('../lib/deploy');
-const Strategy = require('../lib/strategy');
 const fs = require('fs');
-const helpers = require('../lib/helpers');
 const JSZip = require('jszip');
+const fapi = require('../lib/fun');
 
 class KubelessDeploy {
   constructor(serverless, options) {
     this.serverless = serverless;
     this.options = options || {};
-    this.provider = this.serverless.getProvider('kubeless');
+    this.provider = this.serverless.getProvider('fun');
+
+    this.serverless.service.functions = {}
+    this.serverless.service.functions[this.serverless.service.service] = {}
 
     this.hooks = {
       'before:package:createDeploymentArtifacts': () => BbPromise.bind(this)
         .then(this.excludes),
       'deploy:deploy': () => BbPromise.bind(this)
-        .then(this.validate)
         .then(this.deployFunction),
     };
     // Store the result of loading the Zip file
@@ -46,16 +45,6 @@ class KubelessDeploy {
     const exclude = this.serverless.service.package.exclude || [];
     exclude.push('node_modules/**');
     this.serverless.service.package.exclude = exclude;
-  }
-
-  validate() {
-    const unsupportedOptions = ['stage', 'region'];
-    helpers.warnUnsupportedOptions(
-      unsupportedOptions,
-      this.options,
-      this.serverless.cli.log.bind(this.serverless.cli)
-    );
-    return BbPromise.resolve();
   }
 
   getFileContent(zipFile, relativePath) {
@@ -78,14 +67,10 @@ class KubelessDeploy {
     }
   }
 
-  getPkg(description, funcName) {
-    const pkg = this.options.package ||
-                this.serverless.service.package.path ||
-                this.serverless.service.package.artifact ||
-                description.package.artifact ||
-                this.serverless.config.serverless.service.artifact;
+  getPkg(funcName) {
+    const pkg = this.serverless.config.serverless.service.artifact;
 
-
+    // console.log(this.serverless.config.serverless.service);
     // if using the package option and packaging inidividually
     // then we're expecting a directory where artifacts for all the finctions live
     if (this.options.package && this.serverless.service.package.individually) {
@@ -93,7 +78,7 @@ class KubelessDeploy {
         return `${pkg + funcName}.zip`;
       }
       const errMsg = 'Expecting the Paramater to be a directory ' +
-          'for individualy packaged functions';
+        'for individualy packaged functions';
       this.serverless.cli.log(errMsg);
       throw new Error(errMsg);
     }
@@ -102,76 +87,37 @@ class KubelessDeploy {
 
 
   deployFunction() {
+
     const runtime = this.serverless.service.provider.runtime;
-    const populatedFunctions = [];
-    const kubelessConfig = new Config();
-    return new BbPromise((resolve, reject) => {
-      kubelessConfig.init().then(() => {
-        _.each(this.serverless.service.functions, (description, name) => {
-          const pkg = this.getPkg(description, name);
+    const name = this.serverless.service.service
+    const handler = this.serverless.service.provider.handler;
 
-          this.checkSize(pkg);
+    var pkg = this.getPkg(null, name)
+    var x = fs.readFileSync(pkg)
 
-          if (description.handler) {
-            const depFile = helpers.getRuntimeDepfile(description.runtime || runtime,
-               kubelessConfig);
-
-            (new Strategy(this.serverless)).factory().deploy(description, pkg)
-              .catch(reject)
-              .then(deployOptions => {
-                this.getFileContent(pkg, depFile)
-                  .catch(() => {
-                    // No requirements found
-                  })
-                  .then((requirementsContent) => {
-                    populatedFunctions.push(_.assign({}, description, deployOptions, {
-                      id: name,
-                      deps: requirementsContent,
-                      image: description.image || this.serverless.service.provider.image,
-                      events: _.map(description.events, (event) => {
-                        const type = _.keys(event)[0];
-                        if (type === 'trigger') {
-                          return _.assign({ type }, { trigger: event[type] });
-                        } else if (type === 'schedule') {
-                          return _.assign({ type }, { schedule: event[type] });
-                        }
-                        return _.assign({ type }, event[type]);
-                      }),
-                    }));
-                    if (populatedFunctions.length ===
-                      _.keys(this.serverless.service.functions).length) {
-                      resolve();
-                    }
-                  });
-              });
-          } else {
-            populatedFunctions.push(_.assign({}, description, { id: name }));
-            if (populatedFunctions.length === _.keys(this.serverless.service.functions).length) {
-              resolve();
-            }
-          }
-        });
-      });
-    }).then(() => deploy(
-      populatedFunctions,
-      runtime,
-      this.serverless.service.service,
-      {
-        namespace: this.serverless.service.provider.namespace,
-        hostname: this.serverless.service.provider.hostname,
-        defaultDNSResolution: this.serverless.service.provider.defaultDNSResolution,
-        ingress: this.serverless.service.provider.ingress,
-        cpu: this.serverless.service.provider.cpu,
-        memorySize: this.serverless.service.provider.memorySize,
-        affinity: this.serverless.service.provider.affinity,
-        tolerations: this.serverless.service.provider.tolerations,
-        force: this.options.force,
-        verbose: this.options.verbose,
-        log: this.serverless.cli.log.bind(this.serverless.cli),
-        timeout: this.serverless.service.provider.timeout,
-        environment: this.serverless.service.provider.environment,
-      }
-    ));
+    return fapi.getFunction(name)
+      .then(() => {
+        this.serverless.cli.log("Redeploying function...")
+        return true
+      })
+      .catch(e => {
+        if (e.response.status != 404)
+          return Promise.reject(e.response.data.message ?
+            new Error(e.response.data.message + ", " + e.response.data.details + " [" + e.response.data.code + "]") :
+            e)
+        this.serverless.cli.log("Deploying function...")
+        return false
+      })
+      .then((flag) => {
+        if (flag)
+          return fapi.deleteFunction(name)
+      })
+      .then(() => fapi.createFunction(name, x, runtime, handler))
+      .then(() => this.serverless.cli.log("Function deployed."))
+      .catch(e => Promise.reject(e.response.data.message ?
+        new Error(e.response.data.message + ", " + e.response.data.details + " [" + e.response.data.code + "]") :
+        e)
+      )
   }
 }
 

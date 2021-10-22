@@ -19,36 +19,18 @@
 const _ = require('lodash');
 const BbPromise = require('bluebird');
 const path = require('path');
-const helpers = require('../lib/helpers');
-const invoke = require('../lib/invoke');
 
 class KubelessInvoke {
   constructor(serverless, options) {
     this.serverless = serverless;
     this.options = options || {};
-    this.provider = this.serverless.getProvider('kubeless');
+    this.provider = this.serverless.getProvider('fun');
 
     this.hooks = {
       'invoke:invoke': () => BbPromise.bind(this)
-        .then(this.validate)
         .then(this.invokeFunction)
         .then(this.log),
     };
-  }
-
-  validate() {
-    const unsupportedOptions = ['stage', 'region', 'type'];
-    helpers.warnUnsupportedOptions(
-      unsupportedOptions,
-      this.options,
-      this.serverless.cli.log.bind(this.serverless.cli)
-    );
-    if (_.isUndefined(this.serverless.service.functions[this.options.function])) {
-      throw new Error(
-        `The function ${this.options.function} is not present in the current description`
-      );
-    }
-    return BbPromise.resolve();
   }
 
   invokeFunction(func, data) {

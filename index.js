@@ -24,7 +24,6 @@ whole provider implementation.
 
 const KubelessProvider = require('./provider/kubelessProvider');
 const KubelessDeploy = require('./deploy/kubelessDeploy');
-const KubelessDeployFunction = require('./deployFunction/kubelessDeployFunction');
 const KubelessRemove = require('./remove/kubelessRemove');
 const KubelessInvoke = require('./invoke/kubelessInvoke');
 const KubelessInfo = require('./info/kubelessInfo');
@@ -37,7 +36,6 @@ class KubelessIndex {
 
     this.serverless.pluginManager.addPlugin(KubelessProvider);
     this.serverless.pluginManager.addPlugin(KubelessDeploy);
-    this.serverless.pluginManager.addPlugin(KubelessDeployFunction);
     this.serverless.pluginManager.addPlugin(KubelessRemove);
     this.serverless.pluginManager.addPlugin(KubelessInvoke);
     this.serverless.pluginManager.addPlugin(KubelessInfo);

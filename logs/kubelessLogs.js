@@ -18,14 +18,12 @@
 
 const _ = require('lodash');
 const BbPromise = require('bluebird');
-const getLogs = require('../lib/get-logs');
-const helpers = require('../lib/helpers');
 
 class KubelessLogs {
   constructor(serverless, options) {
     this.serverless = serverless;
     this.options = options || {};
-    this.provider = this.serverless.getProvider('kubeless');
+    this.provider = this.serverless.getProvider('fun');
     this.commands = {
       logs: {
         usage: 'Output the logs of a deployed function',
@@ -42,24 +40,8 @@ class KubelessLogs {
     };
     this.hooks = {
       'logs:logs': () => BbPromise.bind(this)
-        .then(this.validate)
         .then(this.printLogs),
     };
-  }
-
-  validate() {
-    const unsupportedOptions = ['stage', 'region', 'interval'];
-    helpers.warnUnsupportedOptions(
-      unsupportedOptions,
-      this.options,
-      this.serverless.cli.log.bind(this.serverless.cli)
-    );
-    if (_.isUndefined(this.serverless.service.functions[this.options.function])) {
-      throw new Error(
-        `The function ${this.options.function} is not present in the current description`
-      );
-    }
-    return BbPromise.resolve();
   }
 
   printLogs(options) {

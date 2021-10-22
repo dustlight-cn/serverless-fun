@@ -18,14 +18,12 @@
 
 const _ = require('lodash');
 const BbPromise = require('bluebird');
-const getInfo = require('../lib/get-info');
-const helpers = require('../lib/helpers');
 
 class KubelessInfo {
   constructor(serverless, options) {
     this.serverless = serverless;
     this.options = options || {};
-    this.provider = this.serverless.getProvider('kubeless');
+    this.provider = this.serverless.getProvider('fun');
     this.commands = {
       info: {
         usage: 'Display information about the current functions',
@@ -42,19 +40,8 @@ class KubelessInfo {
     };
     this.hooks = {
       'info:info': () => BbPromise.bind(this)
-        .then(this.validate)
         .then(this.infoFunction),
     };
-  }
-
-  validate() {
-    const unsupportedOptions = ['stage', 'region'];
-    helpers.warnUnsupportedOptions(
-      unsupportedOptions,
-      this.options,
-      this.serverless.cli.log.bind(this.serverless.cli)
-    );
-    return BbPromise.resolve();
   }
 
   infoFunction(options) {

@@ -16,7 +16,7 @@
 
 'use strict';
 
-const providerName = 'kubeless';
+const providerName = 'fun';
 
 class KubelessProvider {
   static getProviderName() {

@@ -18,8 +18,7 @@
 
 const _ = require('lodash');
 const BbPromise = require('bluebird');
-const helpers = require('../lib/helpers');
-const remove = require('../lib/remove');
+const fapi = require('../lib/fun');
 
 class KubelessRemove {
   constructor(serverless, options) {
@@ -29,31 +28,16 @@ class KubelessRemove {
 
     this.hooks = {
       'remove:remove': () => BbPromise.bind(this)
-        .then(this.validate)
         .then(this.removeFunction),
     };
   }
 
-  validate() {
-    const unsupportedOptions = ['stage', 'region'];
-    helpers.warnUnsupportedOptions(
-      unsupportedOptions,
-      this.options,
-      this.serverless.cli.log.bind(this.serverless.cli)
-    );
-    return BbPromise.resolve();
-  }
-
   removeFunction() {
-    const parsedFunctions = _.map(
-      this.serverless.service.functions,
-      (f, id) => _.assign({ id }, f)
-    );
-    return remove(parsedFunctions, this.serverless.service.service, {
-      namespace: this.serverless.service.provider.namespace,
-      verbose: this.options.verbose,
-      log: this.serverless.cli.log.bind(this.serverless.cli),
-    });
+    return fapi.deleteFunction(this.serverless.service.service)
+      .then(res => this.serverless.cli.log("Function removed."))
+      .catch(e => Promise.reject(e.response.data.message ?
+        new Error(e.response.data.message + ", " + e.response.data.details + " [" + e.response.data.code + "]") :
+        e))
   }
 }
 
