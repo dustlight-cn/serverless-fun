@@ -78,7 +78,7 @@ class KubelessDeploy {
 
     var pkg = this.getPkg(null, name)
     var x = fs.readFileSync(pkg)
-
+    var url = "http://" + process.env.FUN_CLIENT_ID + "." + (process.env.FUN_FUNCTIONS_ENDPOINT || "functions.wgv.ink") + "/" + name
     return fapi.getFunction(name)
       .then(() => {
         this.serverless.cli.log("Redeploying function...")
@@ -97,7 +97,7 @@ class KubelessDeploy {
           return fapi.deleteFunction(name)
       })
       .then(() => fapi.createFunction(name, x, runtime, handler))
-      .then(() => this.serverless.cli.log("Function deployed."))
+      .then(() => this.serverless.cli.log("Function deployed.\nURL: " + url))
       .catch(e => Promise.reject(e.response.data.message ?
         new Error(e.response.data.message + ", " + e.response.data.details + " [" + e.response.data.code + "]") :
         e)
