@@ -25,12 +25,12 @@ whole provider implementation.
 const dotenv = require("dotenv")
 dotenv.config()
 
-const KubelessProvider = require('./provider/kubelessProvider');
-const KubelessDeploy = require('./deploy/kubelessDeploy');
-const KubelessRemove = require('./remove/kubelessRemove');
-const KubelessInvoke = require('./invoke/kubelessInvoke');
-const KubelessInfo = require('./info/kubelessInfo');
-const KubelessLogs = require('./logs/kubelessLogs');
+const KubelessProvider = require('./provider/funProvider');
+const KubelessDeploy = require('./deploy/funDeploy');
+const KubelessRemove = require('./remove/funRemove');
+const KubelessInvoke = require('./invoke/funInvoke');
+const KubelessInfo = require('./info/funInfo');
+const KubelessLogs = require('./logs/funLogs');
 
 
 class KubelessIndex {

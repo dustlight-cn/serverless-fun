@@ -11,4 +11,4 @@ kubeless_linux-amd64.zip
 test/kubeless.jsonnet
 test/kafka-zookeeper.jsonnet
 
-package.json
+package-lock.json

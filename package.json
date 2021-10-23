@@ -3,13 +3,8 @@
   "version": "0.0.1-alpha",
   "description": "This plugin enables support for Fun within the [Serverless Framework].",
   "main": "index.js",
-  "directories": {
-    "example": "examples"
-  },
   "scripts": {
-    "lint": "eslint . --cache",
-    "test": "mocha test/*.test.js --exit",
-    "examples": "mocha test/examples-test.js --exit"
+    "lint": "eslint . --cache"
   },
   "repository": {
     "type": "git",
@@ -23,7 +18,7 @@
   "homepage": "https://github.com/serverless/serverless-kubeless#readme",
   "dependencies": {
     "@plus/auth-client-axios-js": "^1.1.1-alpha",
-    "@plus/fun-client-axios-js": "0.0.1-alpha-1",
+    "@plus/fun-client-axios-js": "^0.0.1-alpha-1",
     "aws-sdk": "^2.527.0",
     "bluebird": "^3.5.0",
     "chalk": "^2.0.1",
