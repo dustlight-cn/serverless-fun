@@ -32,6 +32,10 @@ class KubelessInfo {
   infoFunction(options) {
     return fapi.getFunction(this.serverless.service.service)
       .then(res => this.serverless.cli.log("Function info: \n" + JSON.stringify(res.data, null, 2)))
+      .catch(e => Promise.reject(e.response ?
+        new Error(e.response.data.message + ", " + e.response.data.details + " [" + e.response.data.code + "]") :
+        e)
+      )
   }
 }
 

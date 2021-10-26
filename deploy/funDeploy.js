@@ -98,7 +98,7 @@ class KubelessDeploy {
       })
       .then(() => fapi.createFunction(name, x, runtime, handler))
       .then(() => this.serverless.cli.log("Function deployed.\nURL: " + url))
-      .catch(e => Promise.reject(e.response.data.message ?
+      .catch(e => Promise.reject(e.response ?
         new Error(e.response.data.message + ", " + e.response.data.details + " [" + e.response.data.code + "]") :
         e)
       )

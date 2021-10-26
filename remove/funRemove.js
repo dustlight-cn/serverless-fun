@@ -19,9 +19,10 @@ class KubelessRemove {
   removeFunction() {
     return fapi.deleteFunction(this.serverless.service.service)
       .then(res => this.serverless.cli.log("Function removed."))
-      .catch(e => Promise.reject(e.response.data.message ?
+      .catch(e => Promise.reject(e.response ?
         new Error(e.response.data.message + ", " + e.response.data.details + " [" + e.response.data.code + "]") :
-        e))
+        e)
+      )
   }
 }
 
