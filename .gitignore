@@ -12,3 +12,4 @@ test/kubeless.jsonnet
 test/kafka-zookeeper.jsonnet
 
 package-lock.json
+.idea/

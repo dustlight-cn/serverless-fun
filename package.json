@@ -1,6 +1,6 @@
 {
-  "name": "serverless-fun",
-  "version": "0.0.2-alpha",
+  "name": "@dustlight/serverless-fun",
+  "version": "0.0.2-alpha-dev-1",
   "description": "This plugin enables support for Fun within the [Serverless Framework].",
   "main": "index.js",
   "scripts": {
@@ -8,17 +8,17 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/serverless/serverless-kubeless.git"
+    "url": "git+https://github.com/dustlight-cn/serverless-fun.git"
   },
-  "author": "containers@bitnami.com",
+  "author": "hansin@dustlight.cn",
   "license": "Apache-2.0",
   "bugs": {
-    "url": "https://github.com/serverless/serverless-kubeless/issues"
+    "url": "https://github.com/dustlight-cn/serverless-fun/issues"
   },
-  "homepage": "https://github.com/serverless/serverless-kubeless#readme",
+  "homepage": "https://github.com/dustlight-cn/serverless-fun#readme",
   "dependencies": {
-    "@plus/auth-client-axios-js": "^1.1.1-alpha",
-    "@plus/fun-client-axios-js": "^0.0.2-alpha",
+    "@dustlight/auth-client-axios-js": "^1.1.1-alpha",
+    "@dustlight/fun-client-axios-js": "^0.0.2-alpha",
     "aws-sdk": "^2.527.0",
     "bluebird": "^3.5.0",
     "chalk": "^2.0.1",
