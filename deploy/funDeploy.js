@@ -78,13 +78,14 @@ class KubelessDeploy {
 
     var pkg = this.getPkg(null, name)
     var x = fs.readFileSync(pkg)
-    var url = "http://" + process.env.FUN_CLIENT_ID + "." + (process.env.FUN_FUNCTIONS_ENDPOINT || "functions.wgv.ink") + "/" + name
     return fapi.getFunction(name)
       .then(() => {
         this.serverless.cli.log("Redeploying function...")
         return true
       })
       .catch(e => {
+        if(!e.response)
+          return Promise.reject(e)
         if (e.response.status != 404)
           return Promise.reject(e.response.data.message ?
             new Error(e.response.data.message + ", " + e.response.data.details + " [" + e.response.data.code + "]") :
@@ -97,8 +98,10 @@ class KubelessDeploy {
           return fapi.deleteFunction(name)
       })
       .then(() => fapi.createFunction(name, x, runtime, handler))
-      .then(() => this.serverless.cli.log("Function deployed.\nURL: " + url))
-      .catch(e => Promise.reject(e.response ?
+      .then(() => fapi.ext.config.getConfiguration().then(res => res.data.hostFormat))
+      .then(hostFormat => "http://" + (hostFormat || "%s.fun.dustlight.cn").replace("%s",process.env.FUN_CLIENT_ID) + "/" + name)
+      .then(url => this.serverless.cli.log("Function deployed. URL: " + url))
+      .catch(e => Promise.reject(e.response && e.response.data ?
         new Error(e.response.data.message + ", " + e.response.data.details + " [" + e.response.data.code + "]") :
         e)
       )
