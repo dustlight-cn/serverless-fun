@@ -99,7 +99,7 @@ class KubelessDeploy {
       })
       .then(() => fapi.createFunction(name, x, runtime, handler))
       .then(() => fapi.ext.config.getConfiguration().then(res => res.data.hostFormat))
-      .then(hostFormat => "http://" + (hostFormat || "%s.fun.dustlight.cn").replace("%s",process.env.FUN_CLIENT_ID) + "/" + name)
+      .then(hostFormat => (hostFormat || "http://%s.fun.dustlight.cn").replace("%s",process.env.FUN_CLIENT_ID) + "/" + name)
       .then(url => this.serverless.cli.log("Function deployed. URL: " + url))
       .catch(e => Promise.reject(e.response && e.response.data ?
         new Error(e.response.data.message + ", " + e.response.data.details + " [" + e.response.data.code + "]") :
